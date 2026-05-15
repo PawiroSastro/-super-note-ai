@@ -57,7 +57,7 @@ max-width:1100px;
 
 .hero{
 background:linear-gradient(135deg,#0f4c81,#2563eb);
-padding:30px;
+padding:22px;
 border-radius:25px;
 color:white;
 margin-bottom:20px;
@@ -66,12 +66,38 @@ box-shadow:0 8px 30px rgba(0,0,0,.2);
 
 .hero h1{
 margin:0;
-font-size:35px;
+font-size:42px;
+line-height:1.1;
 }
 
 .hero p{
-font-size:16px;
+font-size:18px;
 opacity:.95;
+margin-top:10px;
+}
+
+/* MODE HP */
+@media (max-width:768px){
+
+.hero{
+padding:18px;
+border-radius:20px;
+}
+
+.hero h1{
+font-size:26px;
+}
+
+.hero p{
+font-size:14px;
+}
+
+.block-container{
+padding-top:.5rem;
+padding-left:1rem;
+padding-right:1rem;
+}
+
 }
 
 .stButton>button{
