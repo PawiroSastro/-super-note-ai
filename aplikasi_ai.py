@@ -1,5 +1,5 @@
 # ======================================================
-# AI SUPER NOTE - CLEAN STABLE VERSION
+# AI SUPER NOTE PRO
 # ======================================================
 
 import streamlit as st
@@ -15,43 +15,110 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph
 
 # ---------------- CONFIG ----------------
 
-MY_SECRET_KEY = st.secrets["OPENAI_API_KEY"]
-
-client = OpenAI(api_key=MY_SECRET_KEY)
-
 st.set_page_config(
     page_title="AI Super Note",
     page_icon="🚀",
     layout="wide"
 )
 
+MY_SECRET_KEY = st.secrets["OPENAI_API_KEY"]
+
+client = OpenAI(api_key=MY_SECRET_KEY)
+
+# ---------------- STYLE ----------------
+
 st.markdown("""
 <style>
+
+#MainMenu {visibility:hidden;}
+footer {visibility:hidden;}
+header {visibility:hidden;}
+
+[data-testid="stToolbar"]{
+visibility:hidden;
+}
+
+[data-testid="stDecoration"]{
+visibility:hidden;
+}
+
+[data-testid="stStatusWidget"]{
+visibility:hidden;
+}
+
+.stApp{
+background:#f4f7fb;
+}
+
+.block-container{
+padding-top:1rem;
+max-width:1100px;
+}
+
+.hero{
+background:linear-gradient(135deg,#0f4c81,#2563eb);
+padding:30px;
+border-radius:25px;
+color:white;
+margin-bottom:20px;
+box-shadow:0 8px 30px rgba(0,0,0,.2);
+}
+
+.hero h1{
+margin:0;
+font-size:35px;
+}
+
+.hero p{
+font-size:16px;
+opacity:.95;
+}
+
 .stButton>button{
 width:100%;
-border-radius:10px;
-background:#007BFF;
-color:white;
+height:55px;
+border-radius:15px;
+font-size:18px;
 font-weight:bold;
+background:#0f4c81;
+color:white;
+border:none;
 }
+
 .stDownloadButton>button{
 width:100%;
-border-radius:10px;
-background:#28a745;
+border-radius:15px;
+background:#16a34a;
 color:white;
 font-weight:bold;
+border:none;
 }
+
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🚀 AI Super Note")
+# ---------------- HEADER ----------------
+
+st.markdown("""
+<div class='hero'>
+<h1>🚀 AI Super Note Pro</h1>
+<p>
+Transkripsi • Ringkasan AI • Mindmap • PDF • Word
+</p>
+</div>
+""", unsafe_allow_html=True)
+
+# ---------------- SESSION ----------------
 
 if "data" not in st.session_state:
-    st.session_state.data = {
-        "audio":None,
-        "transkrip":"",
-        "ringkasan":"",
-        "mindmap":""
+
+    st.session_state.data={
+
+    "audio":None,
+    "transkrip":"",
+    "ringkasan":"",
+    "mindmap":""
+
     }
 
 # ---------------- INPUT ----------------
@@ -63,22 +130,25 @@ with c1:
     st.subheader("🎤 Rekam")
 
     rec=st.audio_input(
-        "Gunakan Mikrofon"
+    "Gunakan mikrofon"
     )
 
     if rec:
+
         st.session_state.data["audio"]=rec.read()
+
 
 with c2:
 
     st.subheader("📂 Upload")
 
     up=st.file_uploader(
-        "Unggah audio",
-        type=["mp3","wav","m4a","ogg"]
+    "Upload Audio",
+    type=["mp3","wav","ogg","m4a"]
     )
 
     if up:
+
         st.session_state.data["audio"]=up.read()
 
 with c3:
@@ -86,117 +156,108 @@ with c3:
     st.subheader("🔗 YouTube")
 
     yt=st.text_input(
-        "Tempel Link"
+    "Tempel link"
     )
 
-
-# ---------------- PROCESS ----------------
+# ---------------- PROSES ----------------
 
 st.divider()
 
 if st.button(
-    "🚀 LUNCURKAN SASARAN KE TARGET",
-    use_container_width=True
+"🚀 LUNCURKAN SASARAN KE TARGET"
 ):
 
-    with st.spinner("Memproses..."):
+    with st.spinner("Memproses AI..."):
 
         try:
 
-            # ---------- youtube ----------
             if yt:
 
                 y=YouTube(yt)
 
                 y.streams.get_audio_only().download(
-                    filename="yt.mp3"
+                filename="yt.mp3"
                 )
 
                 with open(
-                    "yt.mp3",
-                    "rb"
+                "yt.mp3",
+                "rb"
                 ) as f:
 
                     st.session_state.data["audio"]=f.read()
 
                 os.remove(
-                    "yt.mp3"
+                "yt.mp3"
                 )
-
 
             if st.session_state.data["audio"]:
 
                 with open(
-                    "temp_audio.wav",
-                    "wb"
+                "temp.wav",
+                "wb"
                 ) as f:
 
                     f.write(
-                        st.session_state.data["audio"]
+                    st.session_state.data["audio"]
                     )
-
-                # ---------- transcribe ----------
 
                 with open(
-                    "temp_audio.wav",
-                    "rb"
+                "temp.wav",
+                "rb"
                 ) as audio:
 
-                    transcript=client.audio.transcriptions.create(
-                        model="gpt-4o-mini-transcribe",
-                        file=audio,
-                        language="id"
+                    hasil=client.audio.transcriptions.create(
+                    model="gpt-4o-mini-transcribe",
+                    file=audio,
+                    language="id"
                     )
 
-                teks=transcript.text
+                teks=hasil.text
 
                 st.session_state.data["transkrip"]=teks
 
-                # ---------- AI ----------
+                ai=client.chat.completions.create(
 
-                prompt=f"""
-Ringkas materi berikut.
-Buat:
+                model="gpt-4o-mini",
 
-1 Ringkasan
-2 Poin penting
-3 Mermaid mindmap graph TD
+                messages=[
 
-Isi:
+                {
+
+                "role":"user",
+
+                "content":
+                f"""
+Ringkas:
 
 {teks}
-"""
 
-                hasil=client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[
-                        {
-                            "role":"user",
-                            "content":prompt
-                        }
-                    ]
+buat:
+1 ringkasan
+2 poin penting
+3 insight
+"""
+                }
+
+                ]
+
                 )
 
-                isi=hasil.choices[0].message.content
-
-                st.session_state.data["ringkasan"]=isi
+                st.session_state.data["ringkasan"]=ai.choices[0].message.content
 
                 st.session_state.data["mindmap"]="""
 graph TD
-A[Topik]
--->B[Poin 1]
--->C[Poin 2]
--->D[Poin 3]
+A[AI Super Note]
+-->B[Transkrip]
+-->C[Ringkasan]
+-->D[Mindmap]
 """
 
                 st.rerun()
 
         except Exception as e:
 
-            st.error(
-                f"Error : {e}"
-            )
-
+            st.error(e)
 
 # ---------------- OUTPUT ----------------
 
@@ -208,85 +269,76 @@ if d["transkrip"]:
 
     with a:
 
-        st.subheader(
-            "🧠 Mindmap"
-        )
+        st.subheader("🧠 Visual")
 
         st_mermaid.st_mermaid(
-            d["mindmap"]
+        d["mindmap"]
         )
 
         st.info(
-            d["ringkasan"]
+        d["ringkasan"]
         )
 
         st.text_area(
-            "Transkrip",
-            d["transkrip"],
-            height=250
+        "Transkrip",
+        d["transkrip"],
+        height=250
         )
 
     with b:
 
         st.subheader(
-            "💾 Simpan"
+        "💾 Export"
         )
-
-        st.download_button(
-            "Audio",
-            d["audio"],
-            file_name="audio.wav"
-        )
-
-        # WORD
 
         doc=Document()
 
         doc.add_heading(
-            "Laporan AI Super Note",
-            level=1
+        "AI SUPER NOTE",
+        level=1
         )
 
         doc.add_paragraph(
-            d["transkrip"]
+        d["transkrip"]
         )
 
         bio=BytesIO()
 
         doc.save(
-            bio
+        bio
         )
 
         st.download_button(
-            "Unduh Word",
-            bio.getvalue(),
-            "laporan.docx"
+        "📝 Word",
+        bio.getvalue(),
+        "laporan.docx"
         )
-
-        # PDF
 
         p=BytesIO()
 
         pdf=SimpleDocTemplate(
-            p,
-            pagesize=A4
+        p,
+        pagesize=A4
         )
 
         style=getSampleStyleSheet()
 
         pdf.build([
-            Paragraph(
-                "Laporan",
-                style["Title"]
-            ),
-            Paragraph(
-                d["transkrip"],
-                style["Normal"]
-            )
+
+        Paragraph(
+        "Laporan AI",
+        style["Title"]
+        ),
+
+        Paragraph(
+        d["transkrip"],
+        style["Normal"]
+        )
+
         ])
 
         st.download_button(
-            "Unduh PDF",
-            p.getvalue(),
-            "laporan.pdf"
+        "📕 PDF",
+        p.getvalue(),
+        "laporan.pdf"
         )
